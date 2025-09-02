@@ -1,5 +1,8 @@
-export const domain = 'http://localhost:8000/api/'
-export const current = 'http://localhost:3000/'
+// export const domain = 'http://localhost:8000/api/'
+// export const current = 'http://localhost:3000/'
+
+export const domain = 'http://zk0ss4og8s0k04c8ckcscogw.147.93.63.204.sslip.io/api/'
+export const current = 'http://q8gk8s48cskosog8888kk844.147.93.63.204.sslip.io/'
 
 export const cities = [
   "Tirana", "Durrës", "Vlorë", "Shkodër", "Fier", "Elbasan", "Korçë", "Berat", "Lushnjë", "Pogradec",
