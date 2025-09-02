@@ -1,0 +1,191 @@
+import React from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Info } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { domain } from "@/lib/consts";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+const page = async () => {
+  const res = await fetch(`${domain}bookings`);
+  const data = await res.json();
+
+
+
+  return (
+    <div className="p-6">
+      <div>
+        <h2 className="text-3xl font-semibold">Bookings</h2>
+      </div>
+      <div className=" mt-4 overflow-x-auto border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Name</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
+              <TableHead>Details</TableHead>
+              <TableHead>Contact</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((el, index) => {
+              return (
+                <TableRow
+                  key={index}
+                  className={
+                    el.property.exclusive == true
+                      ? "bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+                      : ""
+                  }
+                >
+                  <TableCell className="font-medium">{el.name}</TableCell>
+                  <TableCell>{el.phone}</TableCell>
+                  <TableCell>{el.email}</TableCell>
+                  <TableCell>{el.category?.toUpperCase()}</TableCell>
+                  <TableCell>{el.startDate?.substring(0, 10)}</TableCell>
+                  <TableCell>{el.endDate?.substring(0, 10)}</TableCell>
+                  <TableCell>
+                    <Dialog style={{ maxWidth: "1000px" }}>
+                      <DialogTrigger>
+                        <Button className="cursor-pointer">
+                           <Info />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{el.property.titleSq}</DialogTitle>
+                          <img
+                            src={`${el.property.images[0]}`}
+                            className="rounded-lg  w-full"
+                            alt="Arka Home"
+                          />
+                        </DialogHeader>
+                        <div className="flex flex-wrap items-center  gap-2">
+                          <Badge variant="default">Guests: {el.guests}</Badge>
+                          <Badge variant="default">Status: {el.status}</Badge>
+                          <Badge variant="default">
+                            City: {el.property.city}
+                          </Badge>
+                          <Badge variant="default">
+                            Zone: {el.property.zone}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="default">
+                            Address: {el.property.address}
+                          </Badge>
+                          <Badge variant="default">
+                            Property Type: {el.property.propertyType}
+                          </Badge>
+                          {el.property.furnished && (
+                            <Badge variant="default">Furnished</Badge>
+                          )}
+                          {el.property.invested && (
+                            <Badge variant="default">Invested</Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="default">
+                            Bedrooms: {el.property.bedrooms}
+                          </Badge>
+                          <Badge variant="default">
+                            Bathrooms: {el.property.bathrooms}
+                          </Badge>
+                          {el.category == "rent" ? (
+                            <Badge variant="default">
+                              Price per day: {el.property.pricePerDay}€
+                            </Badge>
+                          ) : (
+                            <Badge variant="default">
+                              Price: {el.property.price}€
+                            </Badge>
+                          )}
+
+                          <Badge variant="default">
+                            Area: {el.property.area} m<sup>2</sup>
+                          </Badge>
+                        </div>
+                        <div className="w-full py-2">
+                          <Textarea value={el.note} readOnly />
+                        </div>
+                        <a
+                          target="_blank"
+                          href={`/properties/${el.property.titleEn}_${el.property.city}_${el.property.category}_${el.property.propertyType}/${el.property.id}`}
+                        >
+                          <Button className={"w-full cursor-pointer"}>Go to property</Button>
+                        </a>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger>
+                        <Button className="cursor-pointer">Contact </Button>
+                      </DialogTrigger>
+                      <DialogContent className="flex flex-col gap-4">
+                        
+
+                        <div className="flex flex-col gap-2 mt-4">
+                          {/* WhatsApp */}
+                          <a
+                            href={`https://wa.me/${el.phone.replace(
+                              /\D/g,
+                              ""
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-green-500 text-white py-2 px-4 rounded text-center"
+                          >
+                            WhatsApp
+                          </a>
+
+                          {/* Phone call */}
+                          <a
+                            href={`tel:${el.phone}`}
+                            className="bg-blue-500 text-white py-2 px-4 rounded text-center"
+                          >
+                            Call
+                          </a>
+
+                          {/* SMS */}
+                          <a
+                            href={`sms:${el.phone}`}
+                            className="bg-gray-700 text-white py-2 px-4 rounded text-center"
+                          >
+                            SMS
+                          </a>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
+export default page;
