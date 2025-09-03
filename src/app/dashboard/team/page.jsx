@@ -1,9 +1,9 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { domain, roles, positions } from "@/lib/consts";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardHeader,
@@ -30,12 +30,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { MailIcon, PhoneIcon , LampDesk  } from "lucide-react";
+import { MailIcon, PhoneIcon, LampDesk } from "lucide-react";
 
 const Page = () => {
   const [offices, setOffices] = useState([]);
   const [members, setMembers] = useState([]);
-  const [agents , setAgents ] = useState([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -55,53 +54,37 @@ const Page = () => {
     fetchData();
   }, []);
 
-const fetchData = async () => {
-  try {
-    const [officesRes, membersRes] = await Promise.all([
-      axios.get(`${domain}office`),
-      axios.get(`${domain}user`)
-    ]);
-    
-    setOffices(officesRes.data);
-    setMembers(membersRes.data);
-    
-    const mergedAgents = membersRes.data.map(member => {
-      const office = officesRes.data.find(o => o.id === member.office || o.name === member.office);
-      
-      return {
-        ...member,
-        officeData: office || null 
-      };
-    });
-    
-    setAgents(mergedAgents);
-    
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    toast.error("Failed to fetch agents data");
-  }
-};
- 
-  console.log(agents)
+  const fetchData = async () => {
+    try {
+      const [officesRes, membersRes] = await Promise.all([
+        axios.get(`${domain}office`),
+        axios.get(`${domain}user`),
+      ]);
+
+      setOffices(officesRes.data || []);
+      setMembers(membersRes.data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setMembers([]);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value
+      [name]: files ? files[0] : value,
     }));
   };
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     const formPayload = new FormData();
-    
     for (const key in formData) {
       if (formData[key] !== null && formData[key] !== "") {
         formPayload.append(key, formData[key]);
       }
     }
-
     try {
       await axios.post(`${domain}user`, formPayload);
       fetchData();
@@ -174,35 +157,20 @@ const fetchData = async () => {
     setCurrentMember(null);
   };
 
-  if (offices.length === 0) {
-    return (
-      <div className="p-6 w-full text-center text-lg font-semibold">
-        Create an office before adding team members
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Team Members</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              Add Member
-            </Button>
+            <Button>Add Member</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Add New Member</DialogTitle>
             </DialogHeader>
-            
             <form onSubmit={handleCreateSubmit} className="grid gap-4 py-4">
-              <MemberForm 
-                formData={formData} 
-                handleChange={handleChange} 
-                offices={offices}
-              />
+              <MemberForm formData={formData} handleChange={handleChange} offices={offices} />
               <DialogFooter>
                 <Button type="submit">Add Member</Button>
               </DialogFooter>
@@ -211,102 +179,98 @@ const fetchData = async () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {members.map((member) => (
-          <Card key={member.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              {member.image && (
-                <img 
-                  src={member.image} 
-                  alt={member.fullName}
-                  className="w-48 h-48 rounded-full  object-cover mx-auto mb-4"
-                />
-              )}
-              <CardTitle className="text-xl font-semibold">{member.fullName}</CardTitle>
-              <CardDescription className="text-neutral-500 flex items-center gap-2">
-                <Badge> {member.position?.toUpperCase()}</Badge>
-                <Badge variant="secondary"> <LampDesk /> {member.office?.toUpperCase()}</Badge>
-                  
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-1 text-neutral-500 ">
-              <div className="flex items-center gap-2">
-                <MailIcon className="w-4 h-4" />
-                <span>{member.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <PhoneIcon className="w-4 h-4" />
-                <span>{member.phone}</span>
-              </div>
-              {member.whatsapp && (
-                <div className="flex items-center gap-2">
-                  <PhoneIcon className="w-4 h-4" />
-                  <span>WhatsApp: {member.whatsapp}</span>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                 className="rounded-full cursor-pointer"
-                size="lg"
-                onClick={() => openEditDialog(member)}
-              >
-                Edit
-              </Button>
-              
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    className="rounded-full cursor-pointer"
-                    size="lg"
-                    onClick={() => openDeleteDialog(member)}
-                  >
-                    Delete
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete {currentMember?.fullName}? This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button 
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDelete}
-                    >
+      {/* Show message if no members */}
+      {members.length === 0 && (
+        <div className="p-6 text-center text-lg text-gray-500">
+          No team members found. Start by adding a new member!
+        </div>
+      )}
+
+      {/* Members Grid */}
+      {members.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {members.map((member) => (
+            <Card key={member.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                {member.image && (
+                  <img
+                    src={member.image}
+                    alt={member.fullName}
+                    className="w-48 h-48 rounded-full object-cover mx-auto mb-4"
+                  />
+                )}
+                <CardTitle className="text-xl font-semibold">{member.fullName}</CardTitle>
+                <CardDescription className="text-neutral-500 flex items-center gap-2">
+                  {member.position && <Badge>{member.position.toUpperCase()}</Badge>}
+                  {member.office && (
+                    <Badge variant="secondary">
+                      <LampDesk /> {member.office.toUpperCase()}
+                    </Badge>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-1 text-neutral-500">
+                {member.email && (
+                  <div className="flex items-center gap-2">
+                    <MailIcon className="w-4 h-4" />
+                    <span>{member.email}</span>
+                  </div>
+                )}
+                {member.phone && (
+                  <div className="flex items-center gap-2">
+                    <PhoneIcon className="w-4 h-4" />
+                    <span>{member.phone}</span>
+                  </div>
+                )}
+                {member.whatsapp && (
+                  <div className="flex items-center gap-2">
+                    <PhoneIcon className="w-4 h-4" />
+                    <span>WhatsApp: {member.whatsapp}</span>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                <Button variant="outline" size="lg" onClick={() => openEditDialog(member)}>
+                  Edit
+                </Button>
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" size="lg" onClick={() => openDeleteDialog(member)}>
                       Delete
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Deletion</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete {currentMember?.fullName}? This action cannot
+                        be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button variant="destructive" onClick={handleDelete}>
+                        Delete
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Edit Member Dialog */}
+      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Member</DialogTitle>
           </DialogHeader>
-          
           <form onSubmit={handleEditSubmit} className="grid gap-4 py-4">
-            <MemberForm 
-              formData={formData} 
-              handleChange={handleChange} 
-              offices={offices}
-            />
+            <MemberForm formData={formData} handleChange={handleChange} offices={offices} />
             <DialogFooter>
               <Button type="submit">Update Member</Button>
             </DialogFooter>
@@ -317,135 +281,105 @@ const fetchData = async () => {
   );
 };
 
-const MemberForm = ({ formData, handleChange, offices }) => {
-  return (
-    <div className="grid grid-cols-1 gap-4">
+// Member Form Component
+const MemberForm = ({ formData, handleChange, offices }) => (
+  <div className="grid grid-cols-1 gap-4">
+    <div className="space-y-2">
+      <Label htmlFor="fullName">Full Name</Label>
+      <Input id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="email">Email</Label>
+      <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name</Label>
-        <Input
-          id="fullName"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          required
-        />
+        <Label htmlFor="phone">Phone</Label>
+        <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
       </div>
-
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+        <Label htmlFor="whatsapp">WhatsApp</Label>
+        <Input id="whatsapp" name="whatsapp" value={formData.whatsapp} onChange={handleChange} />
       </div>
+    </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="whatsapp">WhatsApp</Label>
-          <Input
-            id="whatsapp"
-            name="whatsapp"
-            value={formData.whatsapp}
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="role">Role</Label>
-          <Select
-            name="role"
-            value={formData.role}
-            onValueChange={(val) => handleChange({ target: { name: "role", value: val } })}
-            required
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              {roles.map((role, i) => (
-                <SelectItem key={i} value={role}>{role}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="position">Position</Label>
-          <Select
-            name="position"
-            value={formData.position}
-            onValueChange={(val) => handleChange({ target: { name: "position", value: val } })}
-            required
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select position" />
-            </SelectTrigger>
-            <SelectContent>
-              {positions.map((pos, i) => (
-                <SelectItem key={i} value={pos}>{pos}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
+    <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="office">Office</Label>
+        <Label htmlFor="role">Role</Label>
         <Select
-          name="office"
-          value={formData.office}
-          onValueChange={(val) => handleChange({ target: { name: "office", value: val } })}
-          required
+          name="role"
+          value={formData.role}
+          onValueChange={(val) => handleChange({ target: { name: "role", value: val } })}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select office" />
+            <SelectValue placeholder="Select role" />
           </SelectTrigger>
           <SelectContent>
-            {offices.map((office) => (
-              <SelectItem key={office.id} value={office.name}>
-                {office.name}
+            {roles.map((role) => (
+              <SelectItem key={role} value={role}>
+                {role}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-
       <div className="space-y-2">
-        <Label htmlFor="image">Profile Image</Label>
-        <Input
-          id="image"
-          name="image"
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-        />
-        {formData.image && typeof formData.image === 'string' && (
-          <div className="mt-2">
-            <img 
-              src={formData.image} 
-              alt="Current profile" 
-              className="h-20 w-20 object-cover rounded"
-            />
-          </div>
-        )}
+        <Label htmlFor="position">Position</Label>
+        <Select
+          name="position"
+          value={formData.position}
+          onValueChange={(val) => handleChange({ target: { name: "position", value: val } })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select position" />
+          </SelectTrigger>
+          <SelectContent>
+            {positions.map((pos) => (
+              <SelectItem key={pos} value={pos}>
+                {pos}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
-  );
-};
+
+    <div className="space-y-2">
+      <Label htmlFor="office">Office</Label>
+      <Select
+        name="office"
+        value={formData.office}
+        onValueChange={(val) => handleChange({ target: { name: "office", value: val } })}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select office" />
+        </SelectTrigger>
+        <SelectContent>
+          {offices.length > 0 ? (
+            offices.map((office) => (
+              <SelectItem key={office.id} value={office.name}>
+                {office.name}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem disabled>No offices available</SelectItem>
+          )}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="image">Profile Image</Label>
+      <Input id="image" name="image" type="file" accept="image/*" onChange={handleChange} />
+      {formData.image && typeof formData.image === "string" && (
+        <div className="mt-2">
+          <img src={formData.image} alt="Current profile" className="h-20 w-20 object-cover rounded" />
+        </div>
+      )}
+    </div>
+  </div>
+);
 
 export default Page;

@@ -1,8 +1,8 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import { PlusCircle, Trash2, Pencil } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+'use client';
+import React, { useState, useEffect } from 'react';
+import { PlusCircle, Trash2, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -20,131 +20,107 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'sonner'
-import {domain} from '@/lib/consts'
-
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { domain } from '@/lib/consts';
 
 const OfficesPage = () => {
-  const [offices, setOffices] = useState([])
-  const [newOfficeName, setNewOfficeName] = useState('')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [officeToDelete, setOfficeToDelete] = useState(null)
-  const [editingOffice, setEditingOffice] = useState(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [offices, setOffices] = useState([]);
+  const [newOfficeName, setNewOfficeName] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [officeToDelete, setOfficeToDelete] = useState(null);
+  const [editingOffice, setEditingOffice] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch offices on component mount
   useEffect(() => {
-    fetchOffices()
-  }, [])
+    fetchOffices();
+  }, []);
 
   const fetchOffices = async () => {
     try {
-      const response = await fetch(`${domain}office`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch offices')
-      }
-      const data = await response.json()
-      setOffices(data)
-    } catch (error) {
-      toast.error(error.message)
+      const res = await fetch(`${domain}office`);
+      if (!res.ok) throw new Error('Failed to fetch offices');
+      const data = await res.json();
+      setOffices(data || []);
+    } catch (err) {
+      toast.error(err.message);
+      setOffices([]);
     }
-  }
+  };
 
   const handleAddOffice = async (e) => {
-    e.preventDefault()
-    if (!newOfficeName.trim()) {
-      toast.error('Office name cannot be empty')
-      return
-    }
+    e.preventDefault();
+    if (!newOfficeName.trim()) return toast.error('Office name cannot be empty');
 
     try {
-      const response = await fetch(`${domain}office`, {
+      const res = await fetch(`${domain}office`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newOfficeName.trim() }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to add office')
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to add office');
       }
-
-      const newOffice = await response.json()
-      setOffices([...offices, newOffice])
-      setNewOfficeName('')
-      toast.success('Office added successfully')
-    } catch (error) {
-      toast.error(error.message)
+      const newOffice = await res.json();
+      setOffices([...offices, newOffice]);
+      setNewOfficeName('');
+      toast.success('Office added successfully');
+    } catch (err) {
+      toast.error(err.message);
     }
-  }
+  };
 
   const handleUpdateOffice = async () => {
-    if (!editingOffice?.name.trim()) {
-      toast.error('Office name cannot be empty')
-      return
-    }
+    if (!editingOffice?.name.trim()) return toast.error('Office name cannot be empty');
 
     try {
-      const response = await fetch(`${domain}office/${editingOffice.id}`, {
+      const res = await fetch(`${domain}office/${editingOffice.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editingOffice.name.trim() }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to update office')
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to update office');
       }
-
-      const updatedOffice = await response.json()
-      setOffices(offices.map(office => 
-        office.id === updatedOffice.id ? updatedOffice : office
-      ))
-      setIsEditing(false)
-      setEditingOffice(null)
-      toast.success('Office updated successfully')
-    } catch (error) {
-      toast.error(error.message)
+      const updatedOffice = await res.json();
+      setOffices(offices.map(o => (o.id === updatedOffice.id ? updatedOffice : o)));
+      setIsEditing(false);
+      setEditingOffice(null);
+      toast.success('Office updated successfully');
+    } catch (err) {
+      toast.error(err.message);
     }
-  }
+  };
 
   const handleDeleteOffice = async () => {
-    if (!officeToDelete) return
-
+    if (!officeToDelete) return;
     try {
-      const response = await fetch(`${domain}office/${officeToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to delete office')
+      const res = await fetch(`${domain}office/${officeToDelete.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to delete office');
       }
-
-      setOffices(offices.filter(office => office.id !== officeToDelete.id))
-      setOfficeToDelete(null)
-      setIsDialogOpen(false)
-      toast.success('Office deleted successfully')
-    } catch (error) {
-      toast.error(error.message)
+      setOffices(offices.filter(o => o.id !== officeToDelete.id));
+      setOfficeToDelete(null);
+      setIsDialogOpen(false);
+      toast.success('Office deleted successfully');
+    } catch (err) {
+      toast.error(err.message);
     }
-  }
+  };
 
   const startEditing = (office) => {
-    setEditingOffice({ ...office })
-    setIsEditing(true)
-  }
+    setEditingOffice({ ...office });
+    setIsEditing(true);
+  };
 
   const cancelEditing = () => {
-    setIsEditing(false)
-    setEditingOffice(null)
-  }
+    setEditingOffice(null);
+    setIsEditing(false);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -155,44 +131,39 @@ const OfficesPage = () => {
             <CardTitle className="flex items-center gap-2">
               {isEditing ? (
                 <>
-                  <Pencil className="h-5 w-5" />
-                  Edit Office
+                  <Pencil className="h-5 w-5" /> Edit Office
                 </>
               ) : (
                 <>
-                  <PlusCircle className="h-5 w-5" />
-                  Add New Office
+                  <PlusCircle className="h-5 w-5" /> Add New Office
                 </>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form 
-              onSubmit={isEditing ? (e) => { e.preventDefault(); handleUpdateOffice() } : handleAddOffice} 
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                isEditing ? handleUpdateOffice() : handleAddOffice(e);
+              }}
               className="space-y-4"
             >
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Office name"
-                  value={isEditing ? editingOffice?.name : newOfficeName}
-                  onChange={(e) => 
-                    isEditing 
-                      ? setEditingOffice({...editingOffice, name: e.target.value})
-                      : setNewOfficeName(e.target.value)
-                  }
-                />
-              </div>
+              <Input
+                type="text"
+                placeholder="Office name"
+                value={isEditing ? editingOffice?.name : newOfficeName}
+                onChange={(e) =>
+                  isEditing
+                    ? setEditingOffice({ ...editingOffice, name: e.target.value })
+                    : setNewOfficeName(e.target.value)
+                }
+              />
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">
                   {isEditing ? 'Update' : 'Add'} Office
                 </Button>
                 {isEditing && (
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={cancelEditing}
-                  >
+                  <Button variant="outline" className="flex-1" onClick={cancelEditing}>
                     Cancel
                   </Button>
                 )}
@@ -208,67 +179,74 @@ const OfficesPage = () => {
               <CardTitle>Office Locations</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableCaption>A list of your company offices.</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {offices.map((office) => (
-                    <TableRow key={office.id}>
-                      <TableCell className="font-medium">{office.name}</TableCell>
-                      <TableCell className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => startEditing(office)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Dialog open={isDialogOpen && officeToDelete?.id === office.id} onOpenChange={setIsDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setOfficeToDelete(office)
-                                setIsDialogOpen(true)
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Are you sure?</DialogTitle>
-                              <DialogDescription>
-                                This action cannot be undone. This will permanently delete the {officeToDelete?.name} office.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                Cancel
-                              </Button>
-                              <Button variant="destructive" onClick={handleDeleteOffice}>
-                                Delete
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
+              {offices.length === 0 ? (
+                <p className="text-center py-6 text-neutral-500">
+                  No offices found. Start by adding a new office!
+                </p>
+              ) : (
+                <Table>
+                  <TableCaption>A list of your company offices.</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {offices.map((office) => (
+                      <TableRow key={office.id}>
+                        <TableCell className="font-medium">{office.name || '-'}</TableCell>
+                        <TableCell className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => startEditing(office)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+
+                          <Dialog
+                            open={isDialogOpen && officeToDelete?.id === office.id}
+                            onOpenChange={setIsDialogOpen}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setOfficeToDelete(office);
+                                  setIsDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Are you sure?</DialogTitle>
+                                <DialogDescription>
+                                  This action cannot be undone. This will permanently delete the{' '}
+                                  {officeToDelete?.name || '-'} office.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                  Cancel
+                                </Button>
+                                <Button variant="destructive" onClick={handleDeleteOffice}>
+                                  Delete
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OfficesPage
+export default OfficesPage;

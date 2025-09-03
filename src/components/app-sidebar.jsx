@@ -30,9 +30,9 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
-      devMode: false
+      devMode: true
     },
     {
       title: "Properties",
