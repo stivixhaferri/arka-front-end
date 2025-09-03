@@ -18,8 +18,8 @@ export default async function layout({children}) {
 
 
   const myEmail = user.emailAddresses[0].emailAddress
-  const res = await fetch(`${domain}clerkuser/${myEmail}`);
-  const data = await res.json();
+  // const res = await fetch(`${domain}clerkuser/${myEmail}`);
+  // const data = await res.json();
 
 
   // if(res.status == 404){
